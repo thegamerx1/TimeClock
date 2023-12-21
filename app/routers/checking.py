@@ -1,7 +1,9 @@
-from app import templates, db_path
+from app import templates
 
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, FileResponse
+
+from app.utils.database import get_db
 
 from typing import Annotated
 
@@ -10,30 +12,10 @@ from pathlib import Path
 import hashlib
 import pyttsx3
 
-
-import pyodbc
-
 VOICE_DIR = Path(tempfile.gettempdir()).joinpath("voicefiles/")
 Path(VOICE_DIR).mkdir(exist_ok=True)
 
 router = APIRouter()
-
-
-class get_db:
-    def __init__(self):
-        return None
-
-    def __enter__(self):
-        print(db_path)
-        self.conn = pyodbc.connect(
-            r"Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=" + db_path + ";"
-        )
-        self.cursor = self.conn.cursor()
-        return self
-
-    def __exit__(self, _a, _b, _c):
-        self.cursor.close()
-        self.conn.close()
 
 
 @router.get(
