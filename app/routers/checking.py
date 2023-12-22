@@ -1,19 +1,12 @@
 from app import templates
 
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
 
 from app.utils.database import get_db
+from app.utils.tts import generate_tts, tts_from_id
 
 from typing import Annotated
-
-import tempfile
-from pathlib import Path
-import hashlib
-import pyttsx3
-
-VOICE_DIR = Path(tempfile.gettempdir()).joinpath("voicefiles/")
-Path(VOICE_DIR).mkdir(exist_ok=True)
 
 router = APIRouter()
 
@@ -65,14 +58,17 @@ async def post_login(pinCodigoQR: Annotated[str, Form()]) -> dict:
             f"SELECT * FROM Personas WHERE PINCodigoQR = (?)",
             (pinCodigoQR),
         )
-        persona = db.cursor.fetchone()
+        persona = db.cursor.fetchall()
 
     if persona is None:
         return {"success": False}
 
+    persona = persona[0]
+    print(persona)
+
     nombre = f"{persona[2]}, {persona[1]}"
 
-    id_voz = generar_voz(f"Hola, bienvenido {nombre}")
+    id_voz = generate_tts(f"Hola, bienvenido {nombre}")
 
     # TODO: Fichar en la DB
 
@@ -81,34 +77,8 @@ async def post_login(pinCodigoQR: Annotated[str, Form()]) -> dict:
 
 @router.get(path="/voz/{id_voz}", summary="Da el archivo de voz")
 async def get_voz(id_voz: str):
-    # TODO: ESTO ES VULNERABLE A LFI SOLUCIONAR DESPUES
-    return FileResponse(VOICE_DIR.joinpath(id_voz + ".mp3"), media_type="audio/mpeg")
+    id_archivo = tts_from_id(id_voz)
+    if not id_archivo.exists():
+        raise HTTPException(status_code=404, detail="La voz no fue generada aún")
 
-
-def create_engine():
-    engine = pyttsx3.init()
-
-    engine.setProperty("rate", 130)
-    engine.setProperty("volume", 1.0)
-    voices = engine.getProperty("voices")
-    # for voice in voices:
-    # print(voice)
-    engine.setProperty("voice", voices[0].id)
-
-    return engine
-
-
-def generar_voz(texto: str) -> str:
-    text_hash = hashlib.md5(texto.encode()).hexdigest()
-    archivo = text_hash + ".mp3"
-    destination = VOICE_DIR.joinpath(archivo)
-
-    if destination.exists():
-        return text_hash
-
-    engine = create_engine()
-
-    engine.save_to_file(text=texto, filename=archivo, dir=VOICE_DIR)
-    engine.runAndWait()
-    engine.stop()
-    return text_hash
+    return FileResponse(id_archivo, media_type="audio/mpeg")
