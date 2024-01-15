@@ -40,6 +40,26 @@ html {
 	overflow: hidden;
 }
 
+#reader > video {
+	width: 100%;
+	height: auto;
+	overflow: hidden;
+}
+
+#clocky {
+	position: absolute;
+	bottom: 30px;
+	right: 0;
+	text-align: left;
+	width: 300px;
+	color: #ffffffe0;
+	font-family: NATS;
+	font-size: 32px;
+	font-style: normal;
+	font-weight: 400;
+	line-height: normal;
+}
+
 .modal-content {
 	z-index: 9999;
 	display: flex;
