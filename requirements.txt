@@ -3,3 +3,5 @@ Jinja2==3.1.2
 python-multipart==0.0.6
 requests==2.31.0
 uvicorn[standard]==0.25.0
+pyodbc
+pyttsx3
