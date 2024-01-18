@@ -11,6 +11,8 @@ from datetime import datetime
 
 router = APIRouter()
 
+db_con = get_db()
+
 
 @router.get(
     path="/",
@@ -20,11 +22,10 @@ router = APIRouter()
 )
 async def get_login(request: Request):
     users = []
-    with get_db() as db:
-        db.cursor.execute("SELECT * FROM Personas WHERE BloquearAcceso = 0")
-        for row in db.cursor.fetchall():
-            print(row)
-            users.append({"name": f"{row[2]}, {row[1]}", "Id": row[0]})
+    db_con.cursor.execute("SELECT * FROM Personas WHERE BloquearAcceso = 0")
+    for row in db_con.cursor.fetchall():
+        print(row)
+        users.append({"name": f"{row[2]}, {row[1]}", "Id": row[0]})
 
     context = {
         "request": request,
@@ -54,12 +55,11 @@ async def get_login(request: Request):
     path="/loginCodigoQR", summary="Logs into the app", tags=["Authentication"]
 )
 async def post_login(pinCodigoQR: Annotated[str, Form()]) -> dict:
-    db = get_db()
-    db.cursor.execute(
+    db_con.cursor.execute(
         f"SELECT * FROM Personas WHERE PINCodigoQR = (?)",
         (pinCodigoQR),
     )
-    persona = db.cursor.fetchall()
+    persona = db_con.cursor.fetchall()
 
     if persona is None:
         return {"success": False}
@@ -67,7 +67,7 @@ async def post_login(pinCodigoQR: Annotated[str, Form()]) -> dict:
     persona = persona[0]
     print(persona)
 
-    fichajes = db.cursor.execute(
+    fichajes = db_con.cursor.execute(
         f"SELECT * FROM Fichajes WHERE IdPersona = {persona[0]} AND FechaSalida Is Null ORDER BY FechaEntrada"
     )
 
@@ -81,15 +81,14 @@ async def post_login(pinCodigoQR: Annotated[str, Form()]) -> dict:
         sql = f"INSERT INTO Fichajes (FechaEntrada,IdPersona,Metodo) VALUES (?,{persona[0]},1)"
         mensaje = "Hola, bienvenido"
 
-    db.cursor.execute(sql, (now))
+    db_con.cursor.execute(sql, (now))
 
     nombre = f"{persona[2]}, {persona[1]}"
     nombre_correcto = f"{persona[1]} {persona[2]}"
 
     id_voz = generate_tts(f"{mensaje} {nombre_correcto}")
 
-    db.commit()
-    db.close()
+    db_con.commit()
     return {
         "success": True,
         "mensaje": f"{mensaje} {nombre}",
