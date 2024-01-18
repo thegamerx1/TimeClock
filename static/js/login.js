@@ -10,6 +10,8 @@ function clock() {
 	requestAnimationFrame(clock)
 }
 
+const SLEEPTIME = 2500
+
 function padNumber(num) {
 	return num.toString().padStart(2, "0")
 }
@@ -31,6 +33,9 @@ function fichar(idCodigoQr) {
 			} else {
 				Denegado()
 			}
+			setTimeout(() => {
+				makingRequest = false
+			}, SLEEPTIME)
 		},
 		type: "POST",
 	})
@@ -47,18 +52,16 @@ function playAudio(id_voz) {
 
 async function Denegado() {
 	$("#boton-modalDenegado").click()
-	await sleep(2000)
+	await sleep(SLEEPTIME)
 	$(".close-modalDenegado")[0].click()
-	makingRequest = false
 }
 
 async function Permitido(mensaje, id_voz) {
 	$("#mensajepermitido").text(mensaje)
 	$("#boton-modalPermitido").click()
 	playAudio(id_voz)
-	await sleep(3500)
+	await sleep(SLEEPTIME)
 	$(".close-modalPermitido")[0].click()
-	makingRequest = false
 }
 
 $("#boton-modalDenegado").animatedModal({
@@ -74,7 +77,36 @@ $("#boton-modalPermitido").animatedModal({
 	color: "rgba(0,0,0,0)",
 })
 
-let html5QrcodeScanner = new Html5Qrcode("reader")
+window.addEventListener("load", function () {
+	let codeReader = new ZXing.BrowserMultiFormatReader()
+	let video = document.querySelector("#camera > video")
+	console.log("ZXing code reader initialized")
+	codeReader.listVideoInputDevices().then(videoInputDevices => {
+		let selectedDeviceId = videoInputDevices[0].deviceId
+
+		codeReader.decodeFromVideoDevice(selectedDeviceId, video, (result, err) => {
+			if (result) {
+				fichar(result.text)
+			}
+			if (err && !(err instanceof ZXing.NotFoundException)) {
+				console.error(err)
+			}
+		})
+		console.log(`Started continous decode from camera with id ${selectedDeviceId}`)
+	})
+})
+
+// async function start() {
+// 	let camaras = await Html5Qrcode.getCameras()
+// 	console.log(camaras)
+// 	let camara = camaras[0]
+// 	html5QrcodeScanner.start(camara.id, { fps: 30 }, (decodedText, decodedResult) => {
+// 		fichar(decodedText)
+// 	})
+// }
+
+// start()
+// let html5QrcodeScanner = new Html5Qrcode("reader")
 // $("#login-form").on("submit", e => {
 // 	e.preventDefault()
 // 	$.ajax("/login", {
@@ -93,14 +125,3 @@ let html5QrcodeScanner = new Html5Qrcode("reader")
 // 		type: "POST",
 // 	})
 // })
-
-async function start() {
-	let camaras = await Html5Qrcode.getCameras()
-	console.log(camaras)
-	let camara = camaras[0]
-	html5QrcodeScanner.start(camara.id, { fps: 30 }, (decodedText, decodedResult) => {
-		fichar(decodedText)
-	})
-}
-
-start()
