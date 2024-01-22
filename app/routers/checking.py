@@ -24,7 +24,6 @@ async def get_login(request: Request):
     users = []
     db_con.cursor.execute("SELECT * FROM Personas WHERE BloquearAcceso = 0")
     for row in db_con.cursor.fetchall():
-        print(row)
         users.append({"name": f"{row[2]}, {row[1]}", "Id": row[0]})
 
     context = {
@@ -32,23 +31,6 @@ async def get_login(request: Request):
         "users": users,
     }
     return templates.TemplateResponse("pages/login.html", context)
-
-
-# @router.post(path="/login", summary="Logs into the app", tags=["Authentication"])
-# async def post_login(
-#     userId: Annotated[str, Form()], pin: Annotated[str, Form()]
-# ) -> dict:
-#     with get_db() as db:
-#         db.cursor.execute(f"SELECT * FROM Personas WHERE Id = (?)", (userId))
-#         persona = db.cursor.fetchone()
-
-#     if persona is None or str(persona[3]) != pin:
-#         print("bad :(")
-#         return {"success": False}
-
-#     # TODO: Fichar en la DB
-
-#     return {"success": True}
 
 
 @router.post(
@@ -65,7 +47,6 @@ async def post_login(pinCodigoQR: Annotated[str, Form()]) -> dict:
         return {"success": False}
 
     persona = persona[0]
-    print(persona)
 
     fichajes = db_con.cursor.execute(
         f"SELECT * FROM Fichajes WHERE IdPersona = {persona[0]} AND FechaSalida Is Null ORDER BY FechaEntrada"

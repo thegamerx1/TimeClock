@@ -5,7 +5,7 @@ function clock() {
 			date.getDate()
 		)} ${padNumber(date.getHours())}:${padNumber(date.getMinutes())}:${padNumber(
 			date.getSeconds()
-		)}.${padNumber(date.getMilliseconds())}`
+		)}`
 	)
 	requestAnimationFrame(clock)
 }
