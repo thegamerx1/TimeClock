@@ -16,6 +16,15 @@ function padNumber(num) {
 	return num.toString().padStart(2, "0")
 }
 
+//  If the test fails it means the camera hasn't been initialized for 5 seconds so we reload hoping it works the next time
+let cameraCalledTest = false
+
+setTimeout(() => {
+	if (!cameraCalledTest) {
+		window.location.reload()
+	}
+}, 5000)
+
 requestAnimationFrame(clock)
 
 let makingRequest = false
@@ -85,6 +94,7 @@ window.addEventListener("load", function () {
 		let selectedDeviceId = videoInputDevices[0].deviceId
 
 		codeReader.decodeFromVideoDevice(selectedDeviceId, video, (result, err) => {
+			cameraCalledTest = true
 			if (result) {
 				fichar(result.text)
 			}
