@@ -1,7 +1,7 @@
 from app import templates
 
 from fastapi import APIRouter, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 
 from app.utils.database import get_db
 from app.utils.tts import generate_tts, tts_from_id
@@ -10,31 +10,46 @@ from typing import Annotated
 from datetime import datetime
 
 router = APIRouter()
-
 db_con = get_db()
 
 
 @router.get(
     path="/",
-    summary="Main page",
-    tags=["Authentication"],
+    summary="Serves the login template",
+    include_in_schema=False,
     response_class=HTMLResponse,
 )
 async def get_login(request: Request):
-    users = []
-    db_con.cursor.execute("SELECT * FROM Personas WHERE BloquearAcceso = 0")
-    for row in db_con.cursor.fetchall():
-        users.append({"name": f"{row[2]}, {row[1]}", "Id": row[0]})
+    # users = []
+    # db_con.cursor.execute("SELECT * FROM Personas WHERE BloquearAcceso = 0")
+    # for row in db_con.cursor.fetchall():
+    #     users.append({"name": f"{row[2]}, {row[1]}", "Id": row[0]})
 
     context = {
         "request": request,
-        "users": users,
+        # "users": users,
     }
     return templates.TemplateResponse("pages/login.html", context)
 
 
 @router.post(
-    path="/loginCodigoQR", summary="Logs into the app", tags=["Authentication"]
+    path="/loginCodigoQR",
+    summary="Logs in with a qr code",
+    response_class=JSONResponse,
+    responses={
+        200: {
+            "description": "Login successful",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "mensaje": "Welcome John Doe",
+                        "voz_id": "0cc175b9c0f1b6a831c399e269772661",
+                    }
+                }
+            },
+        },
+    },
 )
 async def post_login(pinCodigoQR: Annotated[str, Form()]) -> dict:
     db_con.cursor.execute(
@@ -77,10 +92,23 @@ async def post_login(pinCodigoQR: Annotated[str, Form()]) -> dict:
     }
 
 
-@router.get(path="/voz/{id_voz}", summary="Da el archivo de voz")
-async def get_voz(id_voz: str):
+@router.get(
+    path="/voz/{id_voz}",
+    summary="Serves a generated audio file",
+    response_class=FileResponse,
+    responses={
+        200: {
+            "description": "Serves the audio file",
+            "content": {"audio/mpeg": {}},
+        },
+        404: {
+            "description": "Audio file not found",
+        },
+    },
+)
+async def get_voz(id_voz: str) -> FileResponse:
     id_archivo = tts_from_id(id_voz)
     if not id_archivo.exists():
-        raise HTTPException(status_code=404, detail="La voz no fue generada aún")
+        raise HTTPException(status_code=404, detail="Audio file not found")
 
     return FileResponse(id_archivo, media_type="audio/mpeg")
