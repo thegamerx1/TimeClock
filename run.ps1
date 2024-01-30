@@ -26,6 +26,8 @@ Start-Job -ScriptBlock {
 			continue
 		}
 	}
+
+	Start-Sleep -Seconds 30
 	Start-Process -FilePath "C:\Program Files\Google\Chrome\Application\chrome.exe" -ArgumentList "--kiosk", "$WEBPAGE"
 
 	While ($true) {
