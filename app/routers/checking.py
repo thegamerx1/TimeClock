@@ -56,12 +56,11 @@ async def post_login(pinCodigoQR: Annotated[str, Form()]) -> dict:
         f"SELECT * FROM Personas WHERE PINCodigoQR = (?)",
         (pinCodigoQR),
     )
-    persona = db_con.cursor.fetchall()
+    persona = db_con.cursor.fetchone()
 
     if persona is None:
         return {"success": False}
 
-    persona = persona[0]
 
     fichajes = db_con.cursor.execute(
         f"SELECT * FROM Fichajes WHERE IdPersona = {persona[0]} AND FechaSalida Is Null ORDER BY FechaEntrada"
