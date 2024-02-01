@@ -95,7 +95,7 @@ window.addEventListener("load", function () {
 
 		codeReader.decodeFromVideoDevice(selectedDeviceId, video, (result, err) => {
 			cameraCalledTest = true
-			if (result) {
+			if (result && result.text.length === 28) {
 				fichar(result.text)
 			}
 			if (err && !(err instanceof ZXing.NotFoundException)) {
