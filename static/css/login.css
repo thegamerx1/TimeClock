@@ -49,11 +49,12 @@ html {
 	background-size: contain;
 }
 
-#camera > video {
+#camera > video,
+#camera > canvas {
 	border-radius: 8px;
 	border: 5px solid #000;
-	width: auto;
-	height: 100%;
+	width: auto !important;
+	height: 100% !important;
 	overflow: hidden;
 	transform: scaleX(-1);
 }

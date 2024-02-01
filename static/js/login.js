@@ -86,52 +86,23 @@ $("#boton-modalPermitido").animatedModal({
 	color: "rgba(0,0,0,0)",
 })
 
-window.addEventListener("load", function () {
-	let codeReader = new ZXing.BrowserMultiFormatReader()
-	let video = document.querySelector("#camera > video")
-	console.log("ZXing code reader initialized")
-	codeReader.listVideoInputDevices().then(videoInputDevices => {
-		let selectedDeviceId = videoInputDevices[0].deviceId
+let config = {
+	fps: 10,
+	qrbox: 250,
+	formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.AZTEC],
+	disableFlip: true,
+}
+let html5QrCode = new Html5Qrcode("camera", config)
 
-		codeReader.decodeFromVideoDevice(selectedDeviceId, video, (result, err) => {
-			cameraCalledTest = true
-			if (result && result.text.length === 28) {
-				fichar(result.text)
-			}
-			if (err && !(err instanceof ZXing.NotFoundException)) {
-				console.error(err)
-			}
-		})
-		console.log(`Started continous decode from camera with id ${selectedDeviceId}`)
+async function start() {
+	let cameras = await Html5Qrcode.getCameras()
+	if (cameras && cameras.length > 0) {
+		cameraCalledTest = true
+	}
+	html5QrCode.start(cameras[0].id, config, (decodedText, decodedResult) => {
+		console.log(decodedText)
+		fichar(decodedText)
 	})
-})
+}
 
-// async function start() {
-// 	let camaras = await Html5Qrcode.getCameras()
-// 	console.log(camaras)
-// 	let camara = camaras[0]
-// 	html5QrcodeScanner.start(camara.id, { fps: 30 }, (decodedText, decodedResult) => {
-// 		fichar(decodedText)
-// 	})
-// }
-
-// start()
-// let html5QrcodeScanner = new Html5Qrcode("reader")
-// $("#login-form").on("submit", e => {
-// 	e.preventDefault()
-// 	$.ajax("/login", {
-// 		data: {
-// 			pin: $("#pin").val(),
-// 			userId: $("#persona").val(),
-// 		},
-// 		dataType: "json",
-// 		success: function (data) {
-// 			if (data.success) {
-// 				Permitido(data.mensaje)
-// 			} else {
-// 				Denegado()
-// 			}
-// 		},
-// 		type: "POST",
-// 	})
-// })
+start()
