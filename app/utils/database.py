@@ -20,4 +20,6 @@ class get_db:
 
     def __exit__(self, _a, _b, _c):
         self.cursor.close()
+        del self.cursor
         self.conn.close()
+        del self.conn
