@@ -10,7 +10,6 @@ from typing import Annotated
 from datetime import datetime
 
 router = APIRouter()
-db_con = get_db()
 
 
 @router.get(
@@ -52,6 +51,7 @@ async def get_login(request: Request):
     },
 )
 async def post_login(pinCodigoQR: Annotated[str, Form()]) -> dict:
+    db_con = get_db()
     db_con.cursor.execute(
         f"SELECT * FROM Personas WHERE PINCodigoQR = (?)",
         (pinCodigoQR),
@@ -59,8 +59,8 @@ async def post_login(pinCodigoQR: Annotated[str, Form()]) -> dict:
     persona = db_con.cursor.fetchone()
 
     if persona is None:
+        db_con.close()
         return {"success": False}
-
 
     fichajes = db_con.cursor.execute(
         f"SELECT * FROM Fichajes WHERE IdPersona = {persona[0]} AND FechaSalida Is Null ORDER BY FechaEntrada"
@@ -84,6 +84,7 @@ async def post_login(pinCodigoQR: Annotated[str, Form()]) -> dict:
     id_voz = generate_tts(f"{mensaje} {nombre_correcto}")
 
     db_con.commit()
+    db_con.close()
     return {
         "success": True,
         "mensaje": f"{mensaje} {nombre}",
