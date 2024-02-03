@@ -38,7 +38,7 @@ function fichar(idCodigoQr) {
 		dataType: "json",
 		success: function (data) {
 			if (data.success) {
-				Permitido(data.mensaje, data.voz_id)
+				Permitido(data.mensaje, data.voz_id, data.entry)
 			} else {
 				Denegado()
 			}
@@ -65,7 +65,8 @@ async function Denegado() {
 	$(".close-modalDenegado")[0].click()
 }
 
-async function Permitido(mensaje, id_voz) {
+async function Permitido(mensaje, id_voz, entrada) {
+	$("#entradasalida").text(entrada ? "ENTRADA" : "SALIDA")
 	$("#mensajepermitido").text(mensaje)
 	$("#boton-modalPermitido").click()
 	playAudio(id_voz)

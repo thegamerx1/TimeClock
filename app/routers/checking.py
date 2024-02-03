@@ -43,6 +43,7 @@ async def get_login(request: Request):
                     "example": {
                         "success": True,
                         "mensaje": "Welcome John Doe",
+                        "entry": True,
                         "voz_id": "0cc175b9c0f1b6a831c399e269772661",
                     }
                 }
@@ -68,10 +69,12 @@ async def post_login(pinCodigoQR: Annotated[str, Form()]) -> dict:
 
     laprimera = fichajes.fetchone()
     now = datetime.now()
+    entrada = False
 
     if not laprimera == None and laprimera[3] == None:
         sql = f"UPDATE Fichajes SET FechaSalida = ? WHERE Id = {laprimera[0]}"
         mensaje = "Que tengas un buen día"
+        entrada = True
     else:
         sql = f"INSERT INTO Fichajes (FechaEntrada,IdPersona,Metodo) VALUES (?,{persona[0]},1)"
         mensaje = "Hola, bienvenido"
@@ -87,6 +90,7 @@ async def post_login(pinCodigoQR: Annotated[str, Form()]) -> dict:
     db_con.close()
     return {
         "success": True,
+        "entry": entrada,
         "mensaje": f"{mensaje} {nombre}",
         "voz_id": id_voz,
     }
