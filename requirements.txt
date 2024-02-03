@@ -5,3 +5,6 @@ requests==2.31.0
 uvicorn[standard]==0.25.0
 pyodbc
 pyttsx3
+aztec_code_generator
+pillow
+qrcode
