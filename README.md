@@ -5,6 +5,8 @@ _TimeClock_ is a small clocking web app for workers using a Microsoft Access Dat
 This uses the [Html5-QRCode](https://github.com/mebjas/html5-qrcode) library for code reading.
 The connection to Microsoft Access database is made through [pyobdc](https://pypi.org/project/pyodbc/) library.
 
+![Demo](demo.png)
+
 ## Installing dependencies
 
 ```
